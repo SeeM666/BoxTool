@@ -1,0 +1,23 @@
+# BoxTool v5.1 - 核心依赖
+# 所有功能纯 Python 实现，APK 可直接使用
+
+# 核心库 (必须)
+kivy>=2.3.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+urllib3>=2.0.0
+
+# 网络与安全 (推荐)
+paramiko>=3.4.0
+pymysql>=1.1.0
+dnspython>=2.4.0
+python-whois>=0.8.0
+redis>=5.0.0
+
+# 工具库
+qrcode[pil]>=7.4.0
+Pillow>=10.0.0
+
+# 可选 (高级功能)
+# shodan>=2.3.0  # Shodan 侦察功能
+# scapy>=2.5.0   # 高级网络扫描
