@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
       - name: Checkout code
@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: '3.11'
       
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -34,18 +34,20 @@ jobs:
             autoconf \
             automake \
             libtool \
-            libtinfo5 \
-            libncurses5 \
+            libtinfo-dev \
+            libncurses-dev \
             zlib1g-dev \
             g++ \
             zip \
             unzip \
             wget \
             curl \
-            git
-          
-          pip install --upgrade pip
-          pip install buildozer cython
+            git \
+            libgtk-3-dev \
+            libglu1-mesa-dev \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good
       
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -55,38 +57,55 @@ jobs:
       
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          log-verbosity: verbose
       
       - name: Configure Android SDK
         run: |
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          sdkmanager --licenses <<< y
+          export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+          yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
           sdkmanager "ndk;25.2.9519653"
           echo "ANDROID_NDK_HOME=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>N</mi><mi>D</mi><mi>R</mi><mi>O</mi><mi>I</mi><msub><mi>D</mi><mi>S</mi></msub><mi>D</mi><msub><mi>K</mi><mi>R</mi></msub><mi>O</mi><mi>O</mi><mi>T</mi><mi mathvariant="normal">/</mi><mi>n</mi><mi>d</mi><mi>k</mi><mi mathvariant="normal">/</mi><mn>25.2.9519653</mn><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">ANDROID_SDK_ROOT/ndk/25.2.9519653&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord">/</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord">/25.2.9519653&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_ENV
           echo "NDK_HOME=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>N</mi><mi>D</mi><mi>R</mi><mi>O</mi><mi>I</mi><msub><mi>D</mi><mi>S</mi></msub><mi>D</mi><msub><mi>K</mi><mi>R</mi></msub><mi>O</mi><mi>O</mi><mi>T</mi><mi mathvariant="normal">/</mi><mi>n</mi><mi>d</mi><mi>k</mi><mi mathvariant="normal">/</mi><mn>25.2.9519653</mn><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">ANDROID_SDK_ROOT/ndk/25.2.9519653&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord">/</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord">/25.2.9519653&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_ENV
+      
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
+      
+      - name: Verify buildozer.spec
+        run: |
+          if [ ! -f buildozer.spec ]; then
+            echo "Error: buildozer.spec not found!"
+            exit 1
+          fi
+          cat buildozer.spec
       
       - name: Build APK with Buildozer
         run: |
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
           export NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653
-          
-          # 确保 buildozer.spec 存在
-          if [ ! -f buildozer.spec ]; then
-            echo "Error: buildozer.spec not found!"
-            exit 1
-          fi
+          export PATH=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mi>A</mi><mi>T</mi><mi>H</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">PATH:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span></span></span></span>ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools
           
           # 构建 APK
           buildozer -v android debug
+        continue-on-error: false
       
       - name: Find APK file
         id: find_apk
         run: |
-          APK_PATH=$(find bin -name "*.apk" -type f | head -n 1)
+          echo "=== Looking for APK ==="
+          find . -name "*.apk" -type f || true
+          APK_PATH=$(find bin -name "*.apk" -type f 2>/dev/null | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -n 1)
+          fi
           echo "apk_path=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>P</mi><msub><mi>K</mi><mi>P</mi></msub><mi>A</mi><mi>T</mi><mi>H</mi><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">APK_PATH&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="mord">&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_OUTPUT
           echo "Found APK: $APK_PATH"
-          ls -la bin/ || true
+          ls -la bin/ 2>/dev/null || true
       
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -104,4 +123,14 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            .buildozer/android/platform/build-*/dists/*/build.log
+            .buildozer/android/platform/build-*/dist_build.log
+          retention-days: 7
 
