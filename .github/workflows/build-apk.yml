@@ -27,21 +27,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             python3-pip \
-            python3-venv \
             build-essential \
-            libffi-dev \
-            libssl-dev \
-            libgstreamer1.0-dev \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
+            git \
+            zip \
+            unzip \
             openjdk-17-jdk \
             autoconf \
-            automake \
             libtool \
-            libtinfo6 \
-            libncursesw5 \
+            pkg-config \
             zlib1g-dev \
-            g++ \
+            libncurses5-dev \
+            libglib2.0-0 \
+            libxrender1 \
+            libglu1-mesa \
+            libffi-dev \
             zip \
             unzip \
             wget \
