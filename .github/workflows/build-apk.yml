@@ -37,16 +37,11 @@ jobs:
             openjdk-17-jdk \
             autoconf \
             automake \
-            build-essential \
             libtool \
-            libtinfo5 \
-            libncurses5 \
+            libtinfo6 \
+            libncursesw5 \
             zlib1g-dev \
             g++ \
-            libmpc-dev \
-            libmpfr-dev \
-            libgmp-dev \
-            libarchive-dev \
             zip \
             unzip \
             wget \
