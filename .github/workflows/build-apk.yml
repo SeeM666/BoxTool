@@ -1,0 +1,107 @@
+name: Build Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip \
+            python3-venv \
+            build-essential \
+            libffi-dev \
+            libssl-dev \
+            openjdk-17-jdk \
+            autoconf \
+            automake \
+            libtool \
+            libtinfo5 \
+            libncurses5 \
+            zlib1g-dev \
+            g++ \
+            zip \
+            unzip \
+            wget \
+            curl \
+            git
+          
+          pip install --upgrade pip
+          pip install buildozer cython
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Configure Android SDK
+        run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          sdkmanager --licenses <<< y
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          sdkmanager "ndk;25.2.9519653"
+          echo "ANDROID_NDK_HOME=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>N</mi><mi>D</mi><mi>R</mi><mi>O</mi><mi>I</mi><msub><mi>D</mi><mi>S</mi></msub><mi>D</mi><msub><mi>K</mi><mi>R</mi></msub><mi>O</mi><mi>O</mi><mi>T</mi><mi mathvariant="normal">/</mi><mi>n</mi><mi>d</mi><mi>k</mi><mi mathvariant="normal">/</mi><mn>25.2.9519653</mn><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">ANDROID_SDK_ROOT/ndk/25.2.9519653&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord">/</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord">/25.2.9519653&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_ENV
+          echo "NDK_HOME=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>N</mi><mi>D</mi><mi>R</mi><mi>O</mi><mi>I</mi><msub><mi>D</mi><mi>S</mi></msub><mi>D</mi><msub><mi>K</mi><mi>R</mi></msub><mi>O</mi><mi>O</mi><mi>T</mi><mi mathvariant="normal">/</mi><mi>n</mi><mi>d</mi><mi>k</mi><mi mathvariant="normal">/</mi><mn>25.2.9519653</mn><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">ANDROID_SDK_ROOT/ndk/25.2.9519653&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05764em;">S</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.00773em;">R</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord">/</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mord">/25.2.9519653&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_ENV
+      
+      - name: Build APK with Buildozer
+        run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+          export NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653
+          
+          # 确保 buildozer.spec 存在
+          if [ ! -f buildozer.spec ]; then
+            echo "Error: buildozer.spec not found!"
+            exit 1
+          fi
+          
+          # 构建 APK
+          buildozer -v android debug
+      
+      - name: Find APK file
+        id: find_apk
+        run: |
+          APK_PATH=$(find bin -name "*.apk" -type f | head -n 1)
+          echo "apk_path=<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mi>P</mi><msub><mi>K</mi><mi>P</mi></msub><mi>A</mi><mi>T</mi><mi>H</mi><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo></mrow><annotation encoding="application/x-tex">APK_PATH&quot; &gt;&gt;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="mord">&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span></span></span></span>GITHUB_OUTPUT
+          echo "Found APK: $APK_PATH"
+          ls -la bin/ || true
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        if: steps.find_apk.outputs.apk_path != ''
+        with:
+          name: BoxTool-APK
+          path: ${{ steps.find_apk.outputs.apk_path }}
+          retention-days: 30
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.find_apk.outputs.apk_path }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
