@@ -3,68 +3,128 @@ name: Build Android APK
 on:
   push:
     tags:
-      - v*
+      - 'v*'
     branches:
       - main
+      - master
   workflow_dispatch:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
       
-      - name: Install deps
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential libffi-dev libssl-dev openjdk-17-jdk autoconf automake libtool zlib1g-dev g++ zip unzip wget curl git
-      
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      
-      - uses: android-actions/setup-android@v3
-      
-      - name: Setup Android
-        run: |
-          sdkmanager platform-tools platforms;android-33 build-tools;33.0.2
-          sdkmanager ndk;25.2.9519653
-          NDK_PATH="${ANDROID_SDK_ROOT}/ndk/25.2.9519653"
-          printf "ANDROID_NDK_HOME=%s\n" "<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi>N</mi><mi>D</mi><msub><mi>K</mi><mi>P</mi></msub><mi>A</mi><mi>T</mi><mi>H</mi></mrow><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo><mi mathvariant="normal">&quot;</mi></mrow><annotation encoding="application/x-tex">{NDK_PATH}&quot; &gt;&gt; &quot;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span></span><span class="mord">&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">&quot;</span></span></span></span>{GITHUB_ENV}"
-          printf "NDK_HOME=%s\n" "<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi>N</mi><mi>D</mi><msub><mi>K</mi><mi>P</mi></msub><mi>A</mi><mi>T</mi><mi>H</mi></mrow><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo><mi mathvariant="normal">&quot;</mi></mrow><annotation encoding="application/x-tex">{NDK_PATH}&quot; &gt;&gt; &quot;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span></span><span class="mord">&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">&quot;</span></span></span></span>{GITHUB_ENV}"
-      
-      - name: Install Python
-        run: |
+          sudo apt-get install -y \
+            python3-pip \
+            python3-venv \
+            build-essential \
+            libffi-dev \
+            libssl-dev \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            openjdk-17-jdk \
+            autoconf \
+            automake \
+            build-essential \
+            libtool \
+            libtinfo5 \
+            libncurses5 \
+            zlib1g-dev \
+            g++ \
+            libmpc-dev \
+            libmpfr-dev \
+            libgmp-dev \
+            libarchive-dev \
+            zip \
+            unzip \
+            wget \
+            curl \
+            git
+          
+          pip install --upgrade pip
           pip install buildozer cython
       
-      - name: Build
-        run: |
-          export ANDROID_HOME="${ANDROID_SDK_ROOT}"
-          export NDK_HOME="${ANDROID_SDK_ROOT}/ndk/25.2.9519653"
-          buildozer android debug
-        timeout-minutes: 90
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       
-      - name: Find APK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Configure Android SDK
+        run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+          yes | sdkmanager --licenses > /dev/null 2>&1
+          sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      
+      - name: Install NDK
+        run: |
+          sdkmanager --install "ndk;25.2.9519653"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+      
+      - name: Prepare buildozer.spec
+        run: |
+          # Update buildozer.spec with correct NDK version
+          sed -i 's/android.ndk = 25b/android.ndk = 25.2.9519653/' buildozer.spec
+          cat buildozer.spec
+      
+      - name: Build APK with Buildozer
+        run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+          export NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653
+          export PATH=$PATH:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools
+          
+          # Initialize buildozer
+          buildozer init || true
+          
+          # Build APK
+          buildozer -v android debug
+      
+      - name: Find APK file
         id: find_apk
         run: |
-          APK_PATH=$(find bin -name "*.apk" -type f 2>/dev/null | head -n 1)
-          printf "apk_path=%s\n" "<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi>A</mi><mi>P</mi><msub><mi>K</mi><mi>P</mi></msub><mi>A</mi><mi>T</mi><mi>H</mi></mrow><mi mathvariant="normal">&quot;</mi><mo>&gt;</mo><mo>&gt;</mo><mi mathvariant="normal">&quot;</mi></mrow><annotation encoding="application/x-tex">{APK_PATH}&quot; &gt;&gt; &quot;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.13889em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span></span><span class="mord">&quot;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">&quot;</span></span></span></span>{GITHUB_OUTPUT}"
+          APK_PATH=$(find bin -name "*.apk" -type f | head -n 1)
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "Found APK: $APK_PATH"
       
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         if: steps.find_apk.outputs.apk_path != ''
         with:
           name: BoxTool-APK
           path: ${{ steps.find_apk.outputs.apk_path }}
+          retention-days: 30
       
-      - uses: softprops/action-gh-release@v1
+      - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
           files: ${{ steps.find_apk.outputs.apk_path }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      
+      - name: Build logs
+        if: always()
+        run: |
+          echo "=== Buildozer logs ==="
+          cat .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists/boxtool__armeabi-v7a/_python_bundle/_python_bundle.log 2>/dev/null || true
+          echo "=== Build output ==="
+          ls -la bin/ 2>/dev/null || true
