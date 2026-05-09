@@ -54,112 +54,90 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       
-      - name: Accept licenses & install SDK
+      - name: Install SDK and NDK
         run: |
           yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653"
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-      
-      - name: Install NDK
-        run: |
-          sdkmanager "ndk;25.2.9519653"
+          echo "ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
           echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
-          # Also set legacy environment variables that buildozer checks
-          echo "ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
-          # Create a symlink to trick buildozer into thinking NDK is already installed
-          mkdir -p ~/.buildozer/android/platform
-          ln -sf $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25.2.9519653
       
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install --upgrade buildozer cython virtualenv pexpect sh
       
-      - name: Fix buildozer tempfile bug
+      - name: Patch buildozer to use existing NDK
         run: |
-          # Monkey-patch buildozer to fix the tempfile bug
-          BUILDOZER_INIT=$(python -c "import buildozer; print(buildozer.__file__)")
-          echo "Buildozer path: $BUILDOZER_INIT"
+          # Find buildozer targets/android.py
+          BUILDOZER_PATH=$(python -c "import buildozer, os; print(os.path.join(os.path.dirname(buildozer.__file__), 'targets', 'android.py'))")
+          echo "Patching: $BUILDOZER_PATH"
           
-          # Create a wrapper to handle the tempfile issue
-          cat > /tmp/buildozer_fix.py << 'PATCH'
-          import urllib.request
-          import tempfile
-          import os
-          
-          original_urlretrieve = urllib.request.urlretrieve
-          
-          def patched_urlretrieve(url, filename=None, reporthook=None, data=None):
-              if filename:
-                  dirname = os.path.dirname(filename)
-                  if dirname:
-                      os.makedirs(dirname, exist_ok=True)
-                  return original_urlretrieve(url, filename, reporthook, data)
-              else:
-                  return original_urlretrieve(url, filename, reporthook, data)
-          
-          urllib.request.urlretrieve = patched_urlretrieve
-          PATCH
-      
-      - name: Debug environment
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
-          echo "NDK_HOME=$NDK_HOME"
-          echo "JAVA_HOME=$JAVA_HOME"
-          which python
-          python --version
-          which java
-          java --version
+          # Add NDK environment check at the beginning of _install_android_ndk method
+          python << 'PYEOF'
+import re
+
+with open("$BUILDOZER_PATH", 'r') as f:
+    content = f.read()
+
+# Find the _install_android_ndk method and add env check
+old_pattern = r"(    def _install_android_ndk\(self\):.*?ndk_dir = self\.buildozer\.global_config\.get\('ndk_dir', None\))"
+new_code = r"""\1
+        # Check ANDROID_NDK environment variable first
+        import os
+        env_ndk = os.environ.get('ANDROID_NDK')
+        if env_ndk and os.path.exists(env_ndk):
+            self.buildozer.info(f'Using NDK from ANDROID_NDK env: {env_ndk}')
+            return env_ndk
+        env_ndk_home = os.environ.get('ANDROID_NDK_HOME')
+        if env_ndk_home and os.path.exists(env_ndk_home):
+            self.buildozer.info(f'Using NDK from ANDROID_NDK_HOME env: {env_ndk_home}')
+            return env_ndk_home"""
+
+content = re.sub(old_pattern, new_code, content, flags=re.DOTALL)
+
+with open("$BUILDOZER_PATH", 'w') as f:
+    f.write(content)
+
+print('Patched successfully')
+PYEOF
       
       - name: Prepare buildozer.spec
         run: |
-          cat buildozer.spec
-          # Ensure NDK is correct
           sed -i 's/^android.ndk.*/android.ndk = 25.2.9519653/' buildozer.spec
           sed -i 's/^android.api.*/android.api = 33/' buildozer.spec
           sed -i 's/^android.minapi.*/android.minapi = 21/' buildozer.spec
-          sed -i 's/^android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
-          echo "=== Final buildozer.spec ==="
           cat buildozer.spec
       
       - name: Build APK
         env:
           ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_NDK: ${{ env.ANDROID_NDK }}
           ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
-          NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          NDK_HOME: ${{ env.NDK_HOME }}
         run: |
           export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools
-          
-          # Clean everything
           rm -rf .buildozer bin
-          
-          # Build
           buildozer -v android debug 2>&1 | tee build.log
       
       - name: Find and upload APK
         if: success()
+        id: find_apk
         run: |
-          echo "=== Build output ==="
           ls -la bin/ || echo "bin/ not found"
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
-          
           APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -n 1)
           if [ -n "$APK_PATH" ]; then
             echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
             echo "✓ APK: $APK_PATH"
-            ls -la "$APK_PATH"
           else
-            echo "✗ No APK generated!"
+            echo "✗ No APK!"
             exit 1
           fi
-        id: find_apk
       
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         if: steps.find_apk.outputs.apk_path
         with:
