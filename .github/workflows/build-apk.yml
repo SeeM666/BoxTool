@@ -66,6 +66,11 @@ jobs:
           sdkmanager "ndk;25.2.9519653"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
           echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+          # Also set legacy environment variables that buildozer checks
+          echo "ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+          # Create a symlink to trick buildozer into thinking NDK is already installed
+          mkdir -p ~/.buildozer/android/platform
+          ln -sf $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25.2.9519653
       
       - name: Install Python packages
         run: |
