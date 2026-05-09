@@ -5,7 +5,7 @@ package.domain = org.boxtool
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,txt
 version = 5.0.0
-requirements = python3,kivy==2.3.0,requests,beautifulsoup4,paramiko,pymysql,qrcode,Pillow,dnspython,shodan,python-nmap
+requirements = python3,kivy==2.3.0,requests,beautifulsoup4,pymysql,qrcode,Pillow,dnspython
 orientation = portrait
 osx.python_version = 3
 osx.kivy_version = 2.3.0
