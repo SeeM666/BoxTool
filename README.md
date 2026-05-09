@@ -1,4 +1,4 @@
-# BoxTool v5.1 - 渗透测试工具箱
+# BoxTool v1.0 - 渗透测试工具箱
 
 <div align="center">
 
@@ -7,7 +7,6 @@
 ![Kivy](https://img.shields.io/badge/kivy-2.3.0-orange.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Android-lightgrey.svg)
 
-**商业级渗透测试工具箱 - 纯 Python 实现，无需外部工具**
 
 [下载 APK](../../releases) | [使用文档](#使用方法) | [功能模块](#功能模块)
 
@@ -15,7 +14,7 @@
 
 ---
 
-## ✨ v5.1 核心特性
+## ✨ v1.0 核心特性
 
 - ✅ **纯 Python 实现** - 无需安装 msfconsole/nmap/sqlmap
 - ✅ **APK 100% 可用** - 所有功能打包后都能正常使用
@@ -132,7 +131,7 @@ Pillow>=10.0.0           # 图像处理
 
 1. Fork 本仓库
 2. 推送代码到你的仓库
-3. 创建 tag: `git tag v5.1.0 && git push origin v5.1.0`
+3. 创建 tag: `git tag v1.0 && git push origin v1.0`
 4. Actions 会自动构建 APK
 
 ### 本地构建
@@ -177,27 +176,6 @@ apk/
 
 ---
 
-## ✅ v5.1 升级内容
-
-### 移除外部工具依赖
-- ❌ 移除 msfconsole 依赖 → ✅ 纯 Python 漏洞检测
-- ❌ 移除 nmap 依赖 → ✅ 纯 Python 端口扫描
-- ❌ 移除 sqlmap 依赖 → ✅ 纯 Python SQL 注入检测
-
-### 功能增强
-- ✅ 所有模块纯 Python 实现
-- ✅ APK 打包后 100% 可用
-- ✅ AI Web 渗透商业级升级
-- ✅ 报告生成功能完善
-
-### 代码优化
-- ✅ 重构 engine.py 核心引擎
-- ✅ 独立 ai_module.py 模块
-- ✅ 添加完整测试脚本
-- ✅ 优化依赖管理
-
----
-
 ## ⚠️ 免责声明
 
 本工具仅供**安全研究和教育目的**使用。
@@ -211,11 +189,6 @@ apk/
 
 ---
 
-## 📄 许可证
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
----
 
 ## 🤝 贡献
 
@@ -226,13 +199,6 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request
-
----
-
-## 📞 联系方式
-
-- 📧 Email: your.email@example.com
-- 💬 Issues: [GitHub Issues](../../issues)
 
 ---
 
